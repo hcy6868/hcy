@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025高考倒计时</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #ffd6e7 30%, #c8f4ff 70%, #a8d8ff 100%);
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
+            overflow: hidden;
+            position: relative;
+        }
+        @keyframes gradientBG {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}
+        }
+        .countdown-container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .countdown {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+            letter-spacing: 2px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .date-info {
+            margin-top: 25px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+        .time-unit {
+            display: inline-block;
+            margin: 0 12px;
+            min-width: 80px;
+        }
+        .unit-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            display: block;
+            margin-top: 8px;
+            font-weight: normal;
+        }
+        .motivation {
+            margin-top: 30px;
+            font-style: italic;
+            color: #3498db;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .formula {
+            position: absolute;
+            color: rgba(0, 0, 0, 0.6); /* 改为黑色，透明度60% */
+            font-size: 28px;
+            font-weight: bold;
+            white-space: nowrap;
+            z-index: 1;
+            user-select: none;
+            pointer-events: none;
+            text-shadow: 0 0 4px rgba(255,255,255,0.8); /* 增强白色阴影 */
+            font-family: 'Times New Roman', serif;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+        @keyframes fadeIn {
+            to {opacity: 0.6;} /* 最终透明度60% */
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown-container">
+        <h1>2025年高考倒计时</h1>
+        <div class="countdown" id="countdown">
+            <div class="time-unit"><span id="days">0</span><span class="unit-label">天</span></div>
+            <div class="time-unit"><span id="hours">0</span><span class="unit-label">小时</span></div>
+            <div class="time-unit"><span id="minutes">0</span><span class="unit-label">分钟</span></div>
+            <div class="time-unit"><span id="seconds">0</span><span class="unit-label">秒</span></div>
+        </div>
+        <div class="date-info" id="date-info"></div>
+        <div class="motivation" id="motivation"></div>
+    </div>
+
+    <script>
+        // 设置2025年高考日期（6月7日上午9:00）
+        const gaokaoDate = new Date('2025-06-07T09:00:00');
+        
+        // 励志语句数组
+        const motivations = [
+            "乾坤未定，你我皆是黑马！",
+            "今日不肯埋头，明日何以抬头！",
+            "你的名字这么好听，一定要出现在录取通知书上！",
+            "来得及，考得上，你可以！",
+            "同是寒窗苦读，怎愿甘拜下风！",
+            "愿你合上笔盖的那一刻，有战士收刀入鞘的骄傲！",
+            "半山腰总是最挤的，你得去山顶看看！",
+            "关关难过关关过，前路漫漫亦灿灿！"
+        ];
+
+        // 高中范围数学物理公式数组（仅符号）
+        const formulas = [
+            // 数学公式
+            "a²+b²=c²", "sin²θ+cos²θ=1", "tanθ=sinθ/cosθ", 
+            "S=½absinC", "V=⅓πr²h", "A=πr²", "C=2πr",
+            "e^{iπ}+1=0", "logₐb=c⇔a^c=b", "(a+b)²=a²+2ab+b²",
+            "a³+b³=(a+b)(a²-ab+b²)", "x=(-b±√(b²-4ac))/2a",
+            "aₙ=a₁+(n-1)d", "Sₙ=n(a₁+aₙ)/2", "aₙ=a₁q^{n-1}",
+            "Sₙ=a₁(1-qⁿ)/(1-q)", "lim(x→∞)(1+1/x)^x=e",
+            "f'(x)=lim(Δx→0)(f(x+Δx)-f(x))/Δx", "∫x^n dx=x^{n+1}/(n+1)+C",
+            "dy/dx=dy/du·du/dx", "∫e^x dx=e^x+C", "∫1/x dx=ln|x|+C",
+            
+            // 物理公式
+            "F=ma", "v=u+at", "s=ut+½at²", "v²=u²+2as",
+            "F=Gm₁m₂/r²", "W=Fs", "P=W/t", "Eₖ=½mv²",
+            "Eₚ=mgh", "p=mv", "FΔt=Δp", "η=W有用/W总",
+            "Q=cmΔt", "I=Q/t", "U=IR", "P=UI",
+            "W=UIt", "F=qvB", "F=ILB", "n₁sinθ₁=n₂sinθ₂",
+            "1/f=1/u+1/v", "E=hν", "λ=h/p", "ΔE=Δmc²"
+        ];
+        
+        // 当前活动的公式弹幕
+        let activeFormulas = [];
+        
+        function updateCountdown() {
+            const now = new Date();
+            const diff = gaokaoDate - now;
+            
+            if (diff <= 0) {
+                document.getElementById('countdown').innerHTML = "<div style='font-size:1.8rem;'>高考已经开始！</div>";
+                document.getElementById('date-info').innerHTML = "2025年高考正在进行中";
+                document.getElementById('motivation').textContent = "祝所有考生金榜题名！";
+                return;
+            }
+            
+            // 计算剩余时间
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            // 更新倒计时显示
+            document.getElementById('days').textContent = days;
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            
+            // 显示高考日期
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date-info').innerHTML = 
+                `2025年高考时间: ${gaokaoDate.toLocaleDateString('zh-CN', options)} 上午9:00`;
+            
+            // 随机显示励志语句
+            if(seconds % 10 === 0) { // 每10秒更换一次
+                const randomIndex = Math.floor(Math.random() * motivations.length);
+                document.getElementById('motivation').textContent = motivations[randomIndex];
+            }
+        }
+        
+        // 创建公式弹幕
+        function createFormula() {
+            const formula = document.createElement('div');
+            formula.className = 'formula';
+            
+            // 随机选择一个公式
+            const randomFormula = formulas[Math.floor(Math.random() * formulas.length)];
+            formula.textContent = randomFormula;
+            
+            // 随机垂直位置（从屏幕右侧进入）
+            const startY = Math.random() * window.innerHeight;
+            formula.style.left = window.innerWidth + 'px';
+            formula.style.top = startY + 'px';
+            
+            document.body.appendChild(formula);
+            
+            // 动画持续时间（8-12秒）
+            const duration = 8000 + Math.random() * 4000;
+            
+            // 记录动画开始时间
+            const startTime = Date.now();
+            
+            // 添加到活动公式数组
+            const formulaObj = {
+                element: formula,
+                startTime: startTime,
+                duration: duration,
+                startY: startY
+            };
+            activeFormulas.push(formulaObj);
+            
+            // 如果活动公式太多，移除最早的
+            if (activeFormulas.length > 25) {
+                const oldest = activeFormulas.shift();
+                document.body.removeChild(oldest.element);
+            }
+        }
+        
+        // 更新所有公式弹幕位置
+        function updateFormulas() {
+            const now = Date.now();
+            const toRemove = [];
+            
+            activeFormulas.forEach((formulaObj, index) => {
+                const elapsed = now - formulaObj.startTime;
+                const progress = elapsed / formulaObj.duration;
+                
+                if (progress >= 1) {
+                    toRemove.push(index);
+                    document.body.removeChild(formulaObj.element);
+                    return;
+                }
+                
+                // 从右向左直线移动
+                const x = window.innerWidth - progress * (window.innerWidth + formulaObj.element.offsetWidth);
+                formulaObj.element.style.left = x + 'px';
+                
+                // 保持垂直位置不变（直线移动）
+                formulaObj.element.style.top = formulaObj.startY + 'px';
+            });
+            
+            // 移除已完成动画的公式
+            toRemove.reverse().forEach(index => {
+                activeFormulas.splice(index, 1);
+            });
+            
+            requestAnimationFrame(updateFormulas);
+        }
+        
+        // 立即更新一次
+        updateCountdown();
+        
+        // 每秒更新一次倒计时
+        setInterval(updateCountdown, 1000);
+        
+        // 每0.6秒创建一个新公式弹幕（增加密度）
+        setInterval(createFormula, 600);
+        
+        // 初始创建15个公式弹幕
+        for (let i = 0; i < 15; i++) {
+            setTimeout(createFormula, i * 200);
+        }
+        
+        // 启动公式弹幕动画
+        requestAnimationFrame(updateFormulas);
+    </script>
+</body>
+</html>
