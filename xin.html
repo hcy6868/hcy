@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高考倒计时-硬核激励版</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ffffff 0%, #ffd6e7 30%, #c8f4ff 70%, #a8d8ff 100%);
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
+            overflow: hidden;
+            position: relative;
+        }
+        @keyframes gradientBG {
+            0% {background-position: 0% 50%;}
+            50% {background-position: 100% 50%;}
+            100% {background-position: 0% 50%;}
+        }
+        .countdown-container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 2.2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        .countdown {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+            letter-spacing: 2px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .date-info {
+            margin-top: 25px;
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+        }
+        .time-unit {
+            display: inline-block;
+            margin: 0 12px;
+            min-width: 80px;
+        }
+        .unit-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            display: block;
+            margin-top: 8px;
+            font-weight: normal;
+        }
+        .motivation {
+            margin-top: 30px;
+            font-style: italic;
+            color: #3498db;
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        .formula {
+            position: absolute;
+            color: rgba(0, 0, 0, 0.6);
+            font-size: 28px;
+            font-weight: bold;
+            white-space: nowrap;
+            z-index: 1;
+            user-select: none;
+            pointer-events: none;
+            text-shadow: 0 0 4px rgba(255,255,255,0.8);
+            font-family: 'Times New Roman', serif;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+        @keyframes fadeIn {
+            to {opacity: 0.6;}
+        }
+        .button-group {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+        .score-button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        .score-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #scoreInput {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #3498db;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .results {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .university-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .dark-toast {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            background: rgba(255,255,255,0.95);
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            max-width: 320px;
+            border-left: 4px solid #e74c3c;
+            animation: slideIn 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            font-size: 15px;
+            line-height: 1.5;
+            color: #2c3e50;
+            z-index: 1000;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(120%); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="countdown-container">
+        <h1>2025年高考倒计时</h1>
+        <div class="countdown" id="countdown">
+            <div class="time-unit"><span id="days">0</span><span class="unit-label">天</span></div>
+            <div class="time-unit"><span id="hours">0</span><span class="unit-label">小时</span></div>
+            <div class="time-unit"><span id="minutes">0</span><span class="unit-label">分钟</span></div>
+            <div class="time-unit"><span id="seconds">0</span><span class="unit-label">秒</span></div>
+        </div>
+        <div class="date-info" id="date-info"></div>
+        <div class="motivation" id="motivation"></div>
+        <div class="button-group">
+            <button class="score-button" onclick="showScoreModal()">我需要参考</button>
+            <button class="score-button" style="background:linear-gradient(135deg, #e74c3c, #c0392b)" 
+                    onclick="showDarkMotivation()">我需要鼓励</button>
+        </div>
+    </div>
+
+    <!-- 分数查询弹窗 -->
+    <div class="modal" id="scoreModal">
+        <div class="modal-content">
+            <div class="search-box">
+                <input type="number" id="scoreInput" placeholder="请输入高考分数（示例数据）">
+                <button class="score-button" onclick="searchUniversities()">查询</button>
+            </div>
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // 核心倒计时功能
+        const gaokaoDate = new Date('2025-06-07T09:00:00');
+        const motivations = [
+            "乾坤未定，你我皆是黑马！",
+            "今日不肯埋头，明日何以抬头！",
+            "你的名字这么好听，一定要出现在录取通知书上！",
+            "来得及，考得上，你可以！",
+            "同是寒窗苦读，怎愿甘拜下风！",
+            "愿你合上笔盖的那一刻，有战士收刀入鞘的骄傲！",
+            "半山腰总是最挤的，你得去山顶看看！",
+            "关关难过关关过，前路漫漫亦灿灿！"
+        ];
+
+        // 毒鸡汤语录
+        const DARK_MOTIVATIONS = [
+            "加油哦，毕竟除了高考你也没什么能拿得出手的了，对吧？三本和专科的大门永远为你敞开！",
+            "现在不努力，以后有的是时间在厂里拧螺丝，还能享受‘福报’加班呢，多励志啊！",
+            "别担心考砸，反正你爸妈已经准备好‘大不了送你出国’的Plan B了，虽然他们可能得卖套房。",
+            "现在偷懒没关系，等以后同学聚会，别人聊年薪百万，你可以骄傲地说‘我在抖音当键盘侠’！",
+            "数学不会？没事，反正以后买菜也用不上函数，前提是你得有钱买菜。",
+            "现在多睡一分钟，考场上就能多懵一道题，多么高效的‘时间管理’啊！",
+            "现在不学，厂里见。",
+            "考砸了？家里有矿？",
+            "985在梦里，你在床上。",
+            "努力？还是等拼爹？",
+            "三本也是本，加油！",
+            "现在不拼命刷题，以后流水线上有的是时间发呆。",
+            "985考不上没关系，反正厂里包吃包住还不用动脑。",
+            "现在偷懒一时爽，查分那天火葬场。",
+            "别人在冲刺清北，你在峡谷里冲刺青铜，真有出息。",
+            "现在多睡一分钟，考场上就能多蒙对一道题，稳赚不亏。"
+        ];
+
+        // 示例大学数据
+       const universityData = [
+            // 北京
+            {name: "清华大学", score: 700, province: "北京", batch: "一批"},
+            {name: "北京大学", score: 695, province: "北京", batch: "一批"},
+            {name: "中国人民大学", score: 675, province: "北京", batch: "一批"},
+            {name: "北京航空航天大学", score: 665, province: "北京", batch: "一批"},
+            
+            // 上海
+            {name: "复旦大学", score: 685, province: "上海", batch: "一批"},
+            {name: "上海交通大学", score: 680, province: "上海", batch: "一批"},
+            {name: "同济大学", score: 660, province: "上海", batch: "一批"},
+            
+            // 浙江
+            {name: "浙江大学", score: 655, province: "浙江", batch: "一批"},
+            {name: "浙江工业大学", score: 595, province: "浙江", batch: "二批"},
+            
+            // 江苏
+            {name: "南京大学", score: 665, province: "江苏", batch: "一批"},
+            {name: "东南大学", score: 640, province: "江苏", batch: "一批"},
+            
+            // 湖北
+            {name: "武汉大学", score: 640, province: "湖北", batch: "一批"},
+            {name: "华中科技大学", score: 635, province: "湖北", batch: "一批"},
+            {name: "武汉理工大学", score: 583, province: "湖北", batch: "一批"},
+
+            // 广东
+            {name: "中山大学", score: 630, province: "广东", batch: "一批"},
+            {name: "华南理工大学", score: 620, province: "广东", batch: "一批"},
+            
+            // 陕西
+            {name: "西安交通大学", score: 635, province: "陕西", batch: "一批"},
+            
+            // 四川
+            {name: "四川大学", score: 625, province: "四川", batch: "一批"},
+            
+            // 新增二批院校示例
+            {name: "北京信息科技大学", score: 550, province: "北京", batch: "二批"},
+            {name: "上海立信会计金融学院", score: 545, province: "上海", batch: "二批"},
+            {name: "浙江工商大学", score: 540, province: "浙江", batch: "二批"},
+            {name: "江苏科技大学", score: 535, province: "江苏", batch: "二批"},
+            
+            // 新增各省市代表性院校
+            {name: "南开大学", score: 670, province: "天津", batch: "一批"},
+            {name: "天津大学", score: 655, province: "天津", batch: "一批"},
+            {name: "厦门大学", score: 645, province: "福建", batch: "一批"},
+            {name: "山东大学", score: 630, province: "山东", batch: "一批"},
+            {name: "中南大学", score: 625, province: "湖南", batch: "一批"},
+            {name: "大连理工大学", score: 620, province: "辽宁", batch: "一批"},
+            
+            // 新增特殊类型院校
+            {name: "外交学院", score: 665, province: "北京", batch: "提前批"},
+            {name: "国际关系学院", score: 630, province: "北京", batch: "提前批"},
+            {name: "上海纽约大学", score: 610, province: "上海", batch: "中外合作"},
+            
+            // 新增港澳院校
+            {name: "香港中文大学(深圳)", score: 660, province: "广东", batch: "港澳招生"},
+            {name: "澳门大学", score: 590, province: "澳门", batch: "港澳招生"}
+        ];
+
+        // 公式弹幕
+        const formulas = [
+            "a²+b²=c²", "sin²θ+cos²θ=1", "tanθ=sinθ/cosθ", 
+            "S=½absinC", "V=⅓πr²h", "A=πr²", "C=2πr",
+            "e^{iπ}+1=0", "logₐb=c⇔a^c=b", "(a+b)²=a²+2ab+b²",
+            "a³+b³=(a+b)(a²-ab+b²)", "x=(-b±√(b²-4ac))/2a",
+            "aₙ=a₁+(n-1)d", "Sₙ=n(a₁+aₙ)/2", "aₙ=a₁q^{n-1}",
+            "Sₙ=a₁(1-qⁿ)/(1-q)", "lim(x→∞)(1+1/x)^x=e",
+            "f'(x)=lim(Δx→0)(f(x+Δx)-f(x))/Δx", "∫x^n dx=x^{n+1}/(n+1)+C",
+            "dy/dx=dy/du·du/dx", "∫e^x dx=e^x+C", "∫1/x dx=ln|x|+C",
+            "F=ma", "v=u+at", "s=ut+½at²", "v²=u²+2as",
+            "F=Gm₁m₂/r²", "W=Fs", "P=W/t", "Eₖ=½mv²",
+            "Eₚ=mgh", "p=mv", "FΔt=Δp", "η=W有用/W总",
+            "Q=cmΔt", "I=Q/t", "U=IR", "P=UI",
+            "W=UIt", "F=qvB", "F=ILB", "n₁sinθ₁=n₂sinθ₂",
+            "1/f=1/u+1/v", "E=hν", "λ=h/p", "ΔE=Δmc²"
+        ];
+
+        // 全局变量
+        let activeFormulas = [];
+
+        // 核心倒计时逻辑
+        function updateCountdown() {
+            const now = new Date();
+            const diff = gaokaoDate - now;
+            
+            if (diff <= 0) {
+                document.getElementById('countdown').innerHTML = "<div style='font-size:1.8rem;'>高考已经开始！</div>";
+                document.getElementById('date-info').innerHTML = "2025年高考正在进行中";
+                document.getElementById('motivation').textContent = "祝所有考生金榜题名！";
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            
+            document.getElementById('days').textContent = days;
+            document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+            
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('date-info').innerHTML = 
+                `2025年高考时间: ${gaokaoDate.toLocaleDateString('zh-CN', options)} 上午9:00`;
+            
+            if(seconds % 10 === 0) {
+                const randomIndex = Math.floor(Math.random() * motivations.length);
+                document.getElementById('motivation').textContent = motivations[randomIndex];
+            }
+        }
+
+        // 毒鸡汤提示功能
+        function showDarkMotivation() {
+            const toast = document.createElement('div');
+            toast.className = 'dark-toast';
+            toast.innerHTML = `
+                <div style="color: #e74c3c; font-weight: bold; margin-bottom: 5px;">⚠️ 灵魂暴击：</div>
+                <div>${DARK_MOTIVATIONS[Math.floor(Math.random()*DARK_MOTIVATIONS.length)]}</div>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(150%)';
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
+        }
+
+        // 志愿推荐功能
+        function showScoreModal() {
+            document.getElementById('scoreModal').style.display = 'flex';
+        }
+        document.getElementById('scoreModal').onclick = function(e) {
+            if (e.target === this) this.style.display = 'none';
+        }
+        function searchUniversities() {
+            const score = parseInt(document.getElementById('scoreInput').value);
+            if (isNaN(score)) return alert("请输入有效分数");
+            
+            const results = universityData.filter(u => u.score <= score)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, 20);
+
+            const resultsHTML = results.length > 0 
+                ? results.map(u => `
+                    <div class="university-item">
+                        <h3>${u.name}（${u.province}）</h3>
+                        <p>录取分数：${u.score}分（${u.batch}）</p>
+                    </div>
+                `).join('')
+                : "<div style='text-align:center;color:#888;padding:20px;'>暂无匹配院校</div>";
+
+            document.getElementById('results').innerHTML = resultsHTML;
+        }
+
+        // 公式弹幕系统
+        function createFormula() {
+            const formula = document.createElement('div');
+            formula.className = 'formula';
+            formula.textContent = formulas[Math.floor(Math.random() * formulas.length)];
+            formula.style.left = window.innerWidth + 'px';
+            formula.style.top = Math.random() * window.innerHeight + 'px';
+            document.body.appendChild(formula);
+            
+            const duration = 8000 + Math.random() * 4000;
+            const startTime = Date.now();
+            
+            activeFormulas.push({
+                element: formula,
+                startTime: startTime,
+                duration: duration,
+                startY: parseFloat(formula.style.top)
+            });
+            
+            if (activeFormulas.length > 25) {
+                const oldest = activeFormulas.shift();
+                document.body.removeChild(oldest.element);
+            }
+        }
+
+        function updateFormulas() {
+            const now = Date.now();
+            const toRemove = [];
+            
+            activeFormulas.forEach((formulaObj, index) => {
+                const elapsed = now - formulaObj.startTime;
+                const progress = elapsed / formulaObj.duration;
+                
+                if (progress >= 1) {
+                    toRemove.push(index);
+                    document.body.removeChild(formulaObj.element);
+                    return;
+                }
+                
+                const x = window.innerWidth - progress * (window.innerWidth + formulaObj.element.offsetWidth);
+                formulaObj.element.style.left = x + 'px';
+                formulaObj.element.style.top = formulaObj.startY + 'px';
+            });
+            
+            toRemove.reverse().forEach(index => activeFormulas.splice(index, 1));
+            requestAnimationFrame(updateFormulas);
+        }
+
+        // 初始化系统
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        setInterval(createFormula, 600);
+        for (let i = 0; i < 15; i++) setTimeout(createFormula, i * 200);
+        requestAnimationFrame(updateFormulas);
+    </script>
+</body>
+</html>
